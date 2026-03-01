@@ -1,112 +1,180 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1220" />
-  <title>Keto Drop Defense</title>
+:root{
+  --bg:#0b1220;
+  --panel:#0f172a;
+  --panel2:#111c33;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --border: rgba(148,163,184,.18);
+  --shadow: 0 18px 40px rgba(0,0,0,.35);
+}
 
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="title">Keto Drop Defense</div>
-      <div class="subtitle">Tippe “bad carbs” weg. Lass Keto durch 🥦</div>
-    </div>
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 700px at 50% -10%, rgba(34,197,94,.18), transparent 60%),
+              radial-gradient(900px 550px at 10% 10%, rgba(14,165,233,.15), transparent 60%),
+              var(--bg);
+  color:var(--text);
+}
 
-    <div class="hud">
-      <div class="pill">
-        <div class="label">Score</div>
-        <div id="score" class="value">0</div>
-      </div>
-      <div class="pill">
-        <div class="label">Ziel</div>
-        <div class="value">+100 / -100</div>
-      </div>
-      <button id="btnRestart" class="btn">Neustart</button>
-    </div>
-  </header>
+.topbar{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  position:sticky;
+  top:0;
+  background: rgba(11,18,32,.85);
+  backdrop-filter: blur(10px);
+  z-index: 5;
+}
 
-  <main class="stage-wrap">
-    <div class="stage">
-      <canvas id="game" width="420" height="760" aria-label="Spielbereich"></canvas>
+.brand .title{ font-weight: 750; letter-spacing:.2px; }
+.brand .subtitle{ color:var(--muted); font-size: 12px; margin-top:2px; }
 
-      <div class="avatarCard" aria-label="Avatar">
-        <div class="avatarTitle">Du</div>
-        <div class="avatarRow">
-          <svg id="avatar" viewBox="0 0 220 220" role="img" aria-label="Mensch-Avatar">
-            <defs>
-              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.25"/>
-                <stop offset="100%" stop-color="#22c55e" stop-opacity="0.2"/>
-              </linearGradient>
-            </defs>
-            <circle cx="110" cy="110" r="100" fill="url(#g)" />
+.hud{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+.pill{
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(15,23,42,.6);
+  min-width: 88px;
+}
+.pill .label{ font-size: 11px; color: var(--muted); }
+.pill .value{ font-size: 16px; font-weight: 700; }
 
-            <circle cx="110" cy="72" r="22" fill="#eab308" opacity="0.9"/>
+.btn{
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(15,23,42,.6);
+  color: var(--text);
+  font-weight: 650;
+}
+.btn:active{ transform: translateY(1px); }
+.btn.primary{
+  background: rgba(34,197,94,.18);
+  border-color: rgba(34,197,94,.35);
+}
 
-            <g id="body" transform="translate(0,0)">
-              <rect x="70" y="95" width="80" height="82" rx="22" fill="#94a3b8" opacity="0.95"/>
-              <rect id="armL" x="42" y="103" width="34" height="62" rx="18" fill="#94a3b8" opacity="0.95"/>
-              <rect id="armR" x="144" y="103" width="34" height="62" rx="18" fill="#94a3b8" opacity="0.95"/>
-              <rect x="82" y="170" width="22" height="40" rx="10" fill="#64748b" opacity="0.95"/>
-              <rect x="116" y="170" width="22" height="40" rx="10" fill="#64748b" opacity="0.95"/>
-            </g>
-          </svg>
+.stage-wrap{
+  display:flex;
+  justify-content:center;
+  padding: 14px;
+}
+.stage{
+  width: min(900px, 100%);
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 900px){
+  .stage{
+    grid-template-columns: 520px 1fr;
+    align-items:start;
+  }
+}
 
-          <div class="avatarStats">
-            <div class="stat">
-              <div class="label">Form</div>
-              <div id="formLabel" class="value">Durchschnitt</div>
-            </div>
-            <div class="stat">
-              <div class="label">Intensität</div>
-              <div id="intensityLabel" class="value">Normal</div>
-            </div>
-            <div class="hint">
-              <span class="kbd">Tap</span> Food = vernichten (0 Punkte).<br/>
-              Durchkommen lassen = +/- Punkte je Keto-Tauglichkeit.
-            </div>
-          </div>
-        </div>
-      </div>
+canvas#game{
+  width:100%;
+  height:auto;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  box-shadow: var(--shadow);
+  touch-action: manipulation;
+}
 
-      <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true">
-        <div class="modal">
-          <div id="resultTitle" class="modalTitle">Ergebnis</div>
-          <div id="resultText" class="modalText"></div>
-          <div class="modalActions">
-            <button id="btnPlayAgain" class="btn primary">Nochmal</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+.avatarCard{
+  border:1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(15,23,42,.55);
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+.avatarTitle{ font-weight: 750; margin-bottom: 8px; }
+.avatarRow{
+  display:flex;
+  gap: 12px;
+  align-items:center;
+}
+#avatar{
+  width: 140px;
+  height: 140px;
+  flex: 0 0 auto;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(2,6,23,.35);
+}
 
-  <footer class="footer">
-    <div>
-      Offline-fähig via Service Worker · Installierbar als PWA
-    </div>
-    <div id="swStatus" class="muted"></div>
-  </footer>
+.avatarStats{ display:flex; flex-direction:column; gap:8px; width:100%; }
+.stat{
+  display:flex;
+  justify-content:space-between;
+  padding: 10px 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(17,28,51,.5);
+}
+.stat .label{ color:var(--muted); font-size: 12px; }
+.stat .value{ font-weight: 750; }
 
-  <script src="./game.js"></script>
-  <script>
-    const swStatus = document.getElementById("swStatus");
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        try {
-          await navigator.serviceWorker.register("./sw.js");
-          swStatus.textContent = "Offline-Cache aktiv.";
-        } catch (e) {
-          swStatus.textContent = "Service Worker konnte nicht geladen werden.";
-        }
-      });
-    } else {
-      swStatus.textContent = "Service Worker nicht unterstützt.";
-    }
-  </script>
-</body>
-</html>
+.hint{
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.kbd{
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(2,6,23,.35);
+  font-weight: 650;
+  color: var(--text);
+}
+
+.footer{
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.muted{ color: var(--muted); }
+
+.overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  z-index: 99;
+}
+.overlay.hidden{ display:none; }
+
+.modal{
+  width: min(520px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(15,23,42,.95);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.modalTitle{ font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.modalText{ color: var(--muted); line-height: 1.45; }
+.modalActions{ margin-top: 12px; display:flex; justify-content:flex-end; }
